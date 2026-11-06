@@ -2,6 +2,12 @@
 
 All notable changes to **Elinboend Bridal Admin Panel** are documented in this file.
 
+## [0.2.0] - 2026-11-06
+### Security & Visual Alignment
+- **Mandatory Admin Login (`/login`)**: Removed auto-authenticated demo sessions and one-click demo bypass buttons. Visiting `/` or any protected route without a verified session now strictly redirects to `/login`.
+- **Credential Validation & Brute-Force Protection**: Added Supabase Auth + Atelier Admin credential verification (`VITE_ADMIN_EMAIL` / `VITE_ADMIN_PASSWORD`), 12-hour session expiry, show/hide password toggle, and 60-second lockout after 5 failed attempts.
+- **Storefront Design Sync**: Synced `Cormorant Garamond` + `Plus Jakarta Sans` fonts and Warm Bronze / Champagne / Editorial Charcoal design tokens with `Elinboendbridal`.
+
 ## [0.1.0] - 2026-11-06
 ### Added
 - **Streamlined Admin Layout**: Collapsible desktop sidebar, mobile bottom navigation bar, bilingual EN/ID switcher (default English), and session/demo authentication.

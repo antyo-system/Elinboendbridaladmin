@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.1.0'
+export const APP_VERSION = '0.2.0'
 
 export interface ChangelogItem {
   version: string
@@ -8,6 +8,16 @@ export interface ChangelogItem {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  {
+    version: '0.2.0',
+    date: '2026-11-06',
+    title: 'Strict Admin Authentication & Brand Visual Alignment',
+    changes: [
+      'Removed auto-login and quick-demo bypass buttons: all routes now strictly require authenticated admin credentials before entering the panel.',
+      'Added 12-hour expiring session token validation, password visibility toggle, and 5-attempt brute-force lockout protection on /login.',
+      'Aligned typography (Cormorant Garamond + Plus Jakarta Sans) and warm bronze-gold/champagne color tokens with the main Elinboend Bridal storefront.',
+    ],
+  },
   {
     version: '0.1.0',
     date: '2026-11-06',
