@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* ===== Elinboend Bridal Luxury Design Tokens (Synced with Main Storefront) ===== */
+@theme {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+
+  /* Warm Rose-Gold, Bronze & Champagne Primary (Matches D:\01_Projects\Elinboendbridal) */
+  --color-primary-50: #fbf7f4;
+  --color-primary-100: #f5ede6;
+  --color-primary-200: #ecdcce;
+  --color-primary-300: #dfc4af;
+  --color-primary-400: #cea58a;
+  --color-primary-500: #bf8d6d;
+  --color-primary-600: #aa7352;
+  --color-primary-700: #8c5b3f;
+  --color-primary-800: #734b36;
+  --color-primary-900: #5f3f2f;
+
+  /* Map rose & pink utilities to Elinboend Warm Bronze/Rose-Gold so all accents stay 100% consistent */
+  --color-rose-50: #fbf7f4;
+  --color-rose-100: #f5ede6;
+  --color-rose-200: #ecdcce;
+  --color-rose-300: #dfc4af;
+  --color-rose-400: #cea58a;
+  --color-rose-500: #bf8d6d;
+  --color-rose-600: #aa7352;
+  --color-rose-700: #8c5b3f;
+  --color-rose-800: #734b36;
+  --color-rose-900: #5f3f2f;
+
+  --color-pink-50: #fbf7f4;
+  --color-pink-100: #f5ede6;
+  --color-pink-200: #ecdcce;
+  --color-pink-300: #dfc4af;
+  --color-pink-400: #cea58a;
+  --color-pink-500: #bf8d6d;
+  --color-pink-600: #aa7352;
+  --color-pink-700: #8c5b3f;
+  --color-pink-800: #734b36;
+  --color-pink-900: #5f3f2f;
+
+  /* Cream & Soft Ivory */
+  --color-cream-50: #fdfcfa;
+  --color-cream-100: #faf8f5;
+  --color-cream-200: #f5f1eb;
+  --color-cream-300: #eee8df;
+  --color-cream-400: #e2d8cb;
+
+  /* Map stone utilities to warm Cream & Editorial Charcoal */
+  --color-stone-50: #faf8f5;
+  --color-stone-100: #f5f1eb;
+  --color-stone-200: #eee8df;
+  --color-stone-300: #e2d8cb;
+  --color-stone-400: #888888;
+  --color-stone-500: #666666;
+  --color-stone-600: #4a4a4a;
+  --color-stone-700: #333333;
+  --color-stone-800: #222222;
+  --color-stone-900: #141414;
+
+  /* Regal Gold Accents */
+  --color-gold-300: #f5e2a3;
+  --color-gold-400: #e6c86e;
+  --color-gold-500: #caa53d;
+  --color-gold-600: #a78229;
+
+  /* Editorial Charcoal */
+  --color-charcoal-50: #f8f8f8;
+  --color-charcoal-100: #e8e8e8;
+  --color-charcoal-200: #d1d1d1;
+  --color-charcoal-300: #b0b0b0;
+  --color-charcoal-400: #888888;
+  --color-charcoal-500: #666666;
+  --color-charcoal-600: #4a4a4a;
+  --color-charcoal-700: #333333;
+  --color-charcoal-800: #222222;
+  --color-charcoal-900: #141414;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-charcoal-900);
+    background-color: var(--color-cream-50);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Custom sleek scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2d8cb;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cea58a;
+}
