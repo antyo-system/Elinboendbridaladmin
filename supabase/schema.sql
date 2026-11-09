@@ -10,8 +10,9 @@
 
 -- --------------------------------------------------------------------
 -- 0. Admin allowlist
---    Only emails listed here can write data or upload media.
---    Add your admin email after running this file (see step at the bottom).
+--    Once this list has entries, only those emails can write or upload media.
+--    While empty, any authenticated user is treated as an admin; add the
+--    owner email immediately and disable public signups during setup.
 -- --------------------------------------------------------------------
 create table if not exists public.admin_emails (
   email text primary key
@@ -27,10 +28,13 @@ stable
 security definer
 set search_path = public
 as $$
-  select exists (
-    select 1
-    from public.admin_emails
-    where lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  select auth.uid() is not null and (
+    not exists (select 1 from public.admin_emails)
+    or exists (
+      select 1
+      from public.admin_emails
+      where lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+    )
   );
 $$;
 
@@ -135,7 +139,39 @@ create trigger articles_touch_updated_at
   for each row execute function public.touch_updated_at();
 
 -- --------------------------------------------------------------------
--- 3. Row Level Security
+-- 3. Realtime publication
+--    Storefront clients listen for changes and re-fetch public rows.
+-- --------------------------------------------------------------------
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication where pubname = 'supabase_realtime'
+  ) then
+    execute 'create publication supabase_realtime';
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'products'
+  ) then
+    execute 'alter publication supabase_realtime add table public.products';
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'articles'
+  ) then
+    execute 'alter publication supabase_realtime add table public.articles';
+  end if;
+end;
+$$;
+
+-- --------------------------------------------------------------------
+-- 4. Row Level Security
 --    Public (storefront): read live products & published articles only.
 --    Admin (allowlisted email): full read/write.
 -- --------------------------------------------------------------------
@@ -185,7 +221,7 @@ create policy "Admin delete articles"
   using (public.is_admin());
 
 -- --------------------------------------------------------------------
--- 4. Media Storage (gown photos & article covers)
+-- 5. Media Storage (gown photos & article covers)
 --    Public bucket for reading; only admins can upload / replace / delete.
 -- --------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
@@ -213,7 +249,9 @@ create policy "Admin delete media"
   using (bucket_id = 'media' and public.is_admin());
 
 -- --------------------------------------------------------------------
--- 5. FINAL STEP — allowlist your admin login email (edit, then run):
+-- 6. OPTIONAL — Restrict admin access to specific emails only:
+--    (If admin_emails is empty, any user created in Authentication -> Users
+--     has admin access. Add rows here if you want to restrict by email.)
 --
 --   insert into public.admin_emails (email)
 --   values ('admin@elinboendbridal.com')
