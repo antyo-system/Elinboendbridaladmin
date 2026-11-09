@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.2.0'
+export const APP_VERSION = '0.3.0'
 
 export interface ChangelogItem {
   version: string
@@ -8,6 +8,17 @@ export interface ChangelogItem {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  {
+    version: '0.3.0',
+    date: '2026-11-09',
+    title: 'Shared Server Database Synchronization (Products & Articles)',
+    changes: [
+      'Connected both admin.elinboendbridal.com and www.elinboendbridal.com to a shared PostgreSQL server database on Supabase (Free Tier).',
+      'Created supabase/schema.sql and supabase/seed.sql defining live products, published articles, RLS policies, and media storage bucket.',
+      'Refactored admin product and article mutations to directly persist to Supabase server with direct image uploads to the public media bucket.',
+      'Integrated storefront data hooks (useProducts, useArticles) with automatic live data fetching and graceful offline mock fallback.',
+    ],
+  },
   {
     version: '0.2.0',
     date: '2026-11-06',

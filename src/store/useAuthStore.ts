@@ -1,49 +1,10 @@
 import { create } from 'zustand'
 import type { Session, User } from '@supabase/supabase-js'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
-
-const AUTH_SESSION_STORAGE_KEY = 'elinboend_admin_auth_session_v2'
-const LEGACY_DEMO_KEY = 'elinboend_admin_demo_session'
-const SESSION_DURATION_MS = 1000 * 60 * 60 * 12 // 12 hours
-
-const configuredAdminEmail =
-  (import.meta.env.VITE_ADMIN_EMAIL as string | undefined)?.trim().toLowerCase() ||
-  'admin@elinboendbridal.com'
-const configuredAdminPassword =
-  (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) || 'Elinboend2026!'
-
-interface StoredAdminSession {
-  email: string
-  expiresAt: number
-}
-
-function readValidStoredSession(): StoredAdminSession | null {
-  try {
-    // Always purge legacy auto-demo key
-    localStorage.removeItem(LEGACY_DEMO_KEY)
-
-    const raw = localStorage.getItem(AUTH_SESSION_STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as StoredAdminSession
-    if (!parsed?.email || typeof parsed.expiresAt !== 'number') {
-      localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
-      return null
-    }
-    if (Date.now() > parsed.expiresAt) {
-      localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
-      return null
-    }
-    return parsed
-  } catch {
-    return null
-  }
-}
+import { supabase, SUPABASE_NOT_CONFIGURED_MESSAGE } from '../lib/supabase'
 
 interface AuthState {
   session: Session | null
   user: User | null
-  isDemoAuthenticated: boolean
-  adminEmail: string | null
   initialized: boolean
   initialize: () => Promise<void>
   signInWithCredentials: (
@@ -53,136 +14,77 @@ interface AuthState {
   signOut: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => {
-  const initialStored = readValidStoredSession()
+let authListenerAttached = false
 
-  return {
-    session: null,
-    user: null,
-    isDemoAuthenticated: Boolean(initialStored),
-    adminEmail: initialStored?.email ?? null,
-    initialized: !isSupabaseConfigured,
+/** Server-side check against the `admin_emails` allowlist (see supabase/schema.sql). */
+async function isAllowlistedAdmin(): Promise<boolean> {
+  if (!supabase) return false
+  const { data, error } = await supabase.rpc('is_admin')
+  return !error && data === true
+}
 
-    initialize: async () => {
-      const storedSession = readValidStoredSession()
+export const useAuthStore = create<AuthState>((set) => ({
+  session: null,
+  user: null,
+  initialized: false,
 
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession()
+  initialize: async () => {
+    if (!supabase) {
+      set({ session: null, user: null, initialized: true })
+      return
+    }
 
-          set({
-            session,
-            user: session?.user ?? null,
-            isDemoAuthenticated: Boolean(storedSession),
-            adminEmail: session?.user?.email ?? storedSession?.email ?? null,
-            initialized: true,
-          })
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-          supabase.auth.onAuthStateChange((_event, nextSession) => {
-            const currentStored = readValidStoredSession()
-            set({
-              session: nextSession,
-              user: nextSession?.user ?? null,
-              isDemoAuthenticated: Boolean(currentStored),
-              adminEmail: nextSession?.user?.email ?? currentStored?.email ?? null,
-              initialized: true,
-            })
-          })
-          return
-        } catch {
-          // Fallback to stored verified session if Supabase is unreachable
-        }
-      }
+    if (session && !(await isAllowlistedAdmin())) {
+      await supabase.auth.signOut()
+      set({ session: null, user: null, initialized: true })
+    } else {
+      set({ session, user: session?.user ?? null, initialized: true })
+    }
 
-      set({
-        session: null,
-        user: null,
-        isDemoAuthenticated: Boolean(storedSession),
-        adminEmail: storedSession?.email ?? null,
-        initialized: true,
+    if (!authListenerAttached) {
+      authListenerAttached = true
+      supabase.auth.onAuthStateChange((_event, nextSession) => {
+        set({ session: nextSession, user: nextSession?.user ?? null, initialized: true })
       })
-    },
+    }
+  },
 
-    signInWithCredentials: async (email: string, password: string) => {
-      const normalizedEmail = email.trim().toLowerCase()
+  signInWithCredentials: async (email: string, password: string) => {
+    if (!supabase) {
+      return { ok: false, error: SUPABASE_NOT_CONFIGURED_MESSAGE }
+    }
 
-      if (!normalizedEmail || !password) {
-        return { ok: false, error: 'Please enter both email address and password.' }
-      }
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail || !password) {
+      return { ok: false, error: 'Please enter both email address and password.' }
+    }
 
-      // 1. Try Supabase Auth if configured
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: normalizedEmail,
-            password,
-          })
-          if (!error && data.session) {
-            set({
-              session: data.session,
-              user: data.user,
-              isDemoAuthenticated: true,
-              adminEmail: data.user?.email ?? normalizedEmail,
-              initialized: true,
-            })
-            return { ok: true }
-          }
-        } catch {
-          // Continue to configured admin credential check
-        }
-      }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    })
 
-      // 2. Strict Atelier Admin Credential Check
-      if (
-        normalizedEmail === configuredAdminEmail &&
-        password === configuredAdminPassword
-      ) {
-        const sessionPayload: StoredAdminSession = {
-          email: normalizedEmail,
-          expiresAt: Date.now() + SESSION_DURATION_MS,
-        }
-        try {
-          localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(sessionPayload))
-        } catch {
-          // Ignore storage error
-        }
-        set({
-          isDemoAuthenticated: true,
-          adminEmail: normalizedEmail,
-          initialized: true,
-        })
-        return { ok: true }
-      }
+    if (error || !data.session) {
+      return { ok: false, error: 'Invalid email or password. Access denied.' }
+    }
 
-      return {
-        ok: false,
-        error: 'Invalid email or password. Access denied.',
-      }
-    },
+    if (!(await isAllowlistedAdmin())) {
+      await supabase.auth.signOut()
+      return { ok: false, error: 'This account is not authorized to access the admin panel.' }
+    }
 
-    signOut: async () => {
-      try {
-        localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
-        localStorage.removeItem(LEGACY_DEMO_KEY)
-      } catch {
-        // Ignore storage error
-      }
-      if (isSupabaseConfigured && supabase) {
-        try {
-          await supabase.auth.signOut()
-        } catch {
-          // Ignore network sign-out error
-        }
-      }
-      set({
-        session: null,
-        user: null,
-        isDemoAuthenticated: false,
-        adminEmail: null,
-        initialized: true,
-      })
-    },
-  }
-})
+    set({ session: data.session, user: data.user, initialized: true })
+    return { ok: true }
+  },
+
+  signOut: async () => {
+    if (supabase) {
+      await supabase.auth.signOut().catch(() => undefined)
+    }
+    set({ session: null, user: null, initialized: true })
+  },
+}))

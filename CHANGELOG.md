@@ -2,6 +2,13 @@
 
 All notable changes to **Elinboend Bridal Admin Panel** are documented in this file.
 
+## [0.3.0] - 2026-11-09
+### Added & Synchronized
+- **Shared Server Database Architecture**: Configured a unified PostgreSQL server database schema (`supabase/schema.sql`) and initial catalog seed (`supabase/seed.sql`) shared by both `admin.elinboendbridal.com` and `www.elinboendbridal.com` on Supabase free tier.
+- **Server Media Storage**: Gown photos and article cover uploads now store directly in Supabase Storage bucket (`media/products` and `media/articles`) with public CDN URLs instead of base64 data URLs.
+- **Storefront Real-time Sync**: Updated `Elinboendbridal` storefront (`CatalogSection`, `ProductDetail`, `Home`, `Articles`, `ArticleDetail`) to fetch live server data with graceful fallback to mock data during initial load.
+- **Setup Documentation**: Added complete step-by-step setup guide in `docs/DATABASE_SYNC_SETUP.md`.
+
 ## [0.2.0] - 2026-11-06
 ### Security & Visual Alignment
 - **Mandatory Admin Login (`/login`)**: Removed auto-authenticated demo sessions and one-click demo bypass buttons. Visiting `/` or any protected route without a verified session now strictly redirects to `/login`.

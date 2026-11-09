@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Sparkle, Eye, EyeSlash, LockKey } from '@phosphor-icons/react'
 import { useAuthStore } from '../store/useAuthStore'
@@ -15,10 +15,16 @@ export default function Login() {
   const [failedAttempts, setFailedAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
 
-  const { session, isDemoAuthenticated, signInWithCredentials } = useAuthStore()
+  const { session, initialized, initialize, signInWithCredentials } = useAuthStore()
   const navigate = useNavigate()
 
-  if (session || isDemoAuthenticated) {
+  useEffect(() => {
+    if (!initialized) {
+      void initialize()
+    }
+  }, [initialized, initialize])
+
+  if (session) {
     return <Navigate to="/" replace />
   }
 

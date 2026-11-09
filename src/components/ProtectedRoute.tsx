@@ -19,7 +19,7 @@ export function ProtectedRoute() {
     )
   }
 
-  if (!auth.session && !auth.isDemoAuthenticated) {
+  if (!auth.session) {
     return <Navigate to="/login" replace />
   }
 

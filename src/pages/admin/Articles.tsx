@@ -235,8 +235,8 @@ export default function AdminArticles() {
           prev.cover_image_alt || `Cover image for ${prev.title || 'bridal article'}`,
       }))
       toast.success('Cover image uploaded successfully!')
-    } catch {
-      toast.error('Failed to upload image. Please try again.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload image. Please try again.')
     } finally {
       setIsUploading(false)
     }
@@ -305,8 +305,8 @@ export default function AdminArticles() {
       setIsEditorOpen(false)
       setEditingId(null)
       setFormData({ ...DEFAULT_FORM_DATA })
-    } catch {
-      toast.error('Failed to save article. Please check your inputs.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save article.')
     }
   }
 

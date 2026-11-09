@@ -11,8 +11,8 @@ import {
   useAddProduct,
   useUpdateProduct,
   useDeleteProduct,
-  fileToDataUrl,
 } from '../../hooks/useProducts'
+import { uploadMediaFile } from '../../lib/supabase'
 import type {
   BridalProduct,
   BridalProductInput,
@@ -197,12 +197,17 @@ export default function AdminProducts() {
       toast.error('Please upload an image file (JPG, PNG, WebP).')
       return
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image is too large. Maximum size is 5MB.')
+      return
+    }
+    const toastId = toast.loading('Uploading gown photo...')
     try {
-      const dataUrl = await fileToDataUrl(file)
-      setImageFile(dataUrl)
-      toast.success('Gown photo loaded successfully.')
-    } catch {
-      toast.error('Failed to read image file.')
+      const publicUrl = await uploadMediaFile(file, 'products')
+      setImageFile(publicUrl)
+      toast.success('Gown photo uploaded.', { id: toastId })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload image.', { id: toastId })
     }
   }
 
@@ -264,8 +269,8 @@ export default function AdminProducts() {
       }
       setShowForm(false)
       setEditingProduct(null)
-    } catch {
-      toast.error('Failed to save gown. Please verify your inputs.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save gown.')
     }
   }
 
@@ -277,8 +282,8 @@ export default function AdminProducts() {
       if (viewingProduct?.id === product.id) {
         setViewingProduct(null)
       }
-    } catch {
-      toast.error('Failed to delete product.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete product.')
     }
   }
 

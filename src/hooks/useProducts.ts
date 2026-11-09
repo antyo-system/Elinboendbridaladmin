@@ -1,102 +1,108 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
 import type { BridalProduct, BridalProductInput } from '../types/product'
-import { INITIAL_BRIDAL_PRODUCTS } from '../data/initialBridalData'
 import { slugify } from '../utils/seoUtils'
 
-const LOCAL_PRODUCTS_KEY = 'elinboend_bridal_admin_products_v1'
+const PRODUCTS_QUERY_KEY = ['bridal-products']
 
-function loadLocalProducts(): BridalProduct[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_PRODUCTS_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
-      }
-    }
-    localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(INITIAL_BRIDAL_PRODUCTS))
-  } catch {
-    // Ignore storage error
-  }
-  return INITIAL_BRIDAL_PRODUCTS
-}
+type ProductRow = Partial<BridalProduct> & { id: string }
 
-function saveLocalProducts(products: BridalProduct[]) {
-  try {
-    localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(products))
-  } catch {
-    // Ignore storage error
-  }
-}
-
-function normalizeProductRow(raw: Partial<BridalProduct>, index: number): BridalProduct {
-  const title = raw.title || 'Untitled Bridal Gown'
+function toProduct(row: ProductRow): BridalProduct {
+  const title = row.title || 'Untitled Bridal Gown'
   return {
-    id: raw.id || `eb-${index + 1}`,
-    code: raw.code || `EB-${String(index + 1).padStart(3, '0')}`,
+    id: row.id,
+    code: row.code || '',
     title,
-    slug: raw.slug || slugify(title),
-    product_type: raw.product_type === 'party_dress' ? 'party_dress' : 'wedding_gown',
-    silhouette: raw.silhouette || 'Ballgown',
-    occasion: raw.occasion || 'Holy Matrimony',
-    color_name: raw.color_name || 'Ivory & Warm Champagne',
-    color_hex: raw.color_hex || '#F5EDE6',
-    fabric: raw.fabric || 'French Chantilly Lace & Silk Organza',
-    rental_price: Number(raw.rental_price ?? 0),
+    slug: row.slug || slugify(title),
+    product_type: row.product_type === 'party_dress' ? 'party_dress' : 'wedding_gown',
+    silhouette: row.silhouette || 'Ballgown',
+    occasion: row.occasion || 'Holy Matrimony',
+    color_name: row.color_name || 'Ivory',
+    color_hex: row.color_hex || '#F5EDE6',
+    fabric: row.fabric || '',
+    rental_price: Number(row.rental_price ?? 0),
     original_rental_price:
-      raw.original_rental_price !== undefined && raw.original_rental_price !== null
-        ? Number(raw.original_rental_price)
-        : null,
-    purchase_price: Number(raw.purchase_price ?? 0),
+      row.original_rental_price === null || row.original_rental_price === undefined
+        ? null
+        : Number(row.original_rental_price),
+    purchase_price: Number(row.purchase_price ?? 0),
     original_purchase_price:
-      raw.original_purchase_price !== undefined && raw.original_purchase_price !== null
-        ? Number(raw.original_purchase_price)
-        : null,
-    security_deposit: Number(raw.security_deposit ?? 1000000),
-    is_rental_available: raw.is_rental_available !== false,
-    is_purchase_available: raw.is_purchase_available !== false,
-    badge_label: raw.badge_label || '',
-    images: Array.isArray(raw.images) ? raw.images : [],
-    description: raw.description || '',
-    rating: Number(raw.rating ?? 5.0),
-    reviews_count: Number(raw.reviews_count ?? 0),
-    rented_count: Number(raw.rented_count ?? 0),
-    sizes_available:
-      Array.isArray(raw.sizes_available) && raw.sizes_available.length > 0
-        ? raw.sizes_available
-        : ['XS', 'S', 'M', 'L', 'Custom'],
-    is_live: raw.is_live !== false,
-    store_code: raw.store_code || 'EB_ATELIER',
-    pickup_sla: raw.pickup_sla || '3_day',
-    in_stock: raw.in_stock !== false,
-    created_at: raw.created_at || new Date().toISOString(),
+      row.original_purchase_price === null || row.original_purchase_price === undefined
+        ? null
+        : Number(row.original_purchase_price),
+    security_deposit: Number(row.security_deposit ?? 0),
+    is_rental_available: row.is_rental_available !== false,
+    is_purchase_available: row.is_purchase_available !== false,
+    badge_label: row.badge_label || '',
+    images: Array.isArray(row.images) ? row.images : [],
+    description: row.description || '',
+    rating: Number(row.rating ?? 5),
+    reviews_count: Number(row.reviews_count ?? 0),
+    rented_count: Number(row.rented_count ?? 0),
+    sizes_available: Array.isArray(row.sizes_available) ? row.sizes_available : [],
+    is_live: row.is_live !== false,
+    store_code: row.store_code || 'EB_ATELIER',
+    pickup_sla: row.pickup_sla || '3_day',
+    in_stock: row.in_stock !== false,
+    created_at: row.created_at || new Date().toISOString(),
   }
+}
+
+/** Maps the form payload to database columns (id / created_at are managed by Postgres). */
+function toRow(input: BridalProductInput) {
+  return {
+    code: input.code,
+    title: input.title,
+    slug: input.slug,
+    product_type: input.product_type,
+    silhouette: input.silhouette,
+    occasion: input.occasion,
+    color_name: input.color_name,
+    color_hex: input.color_hex,
+    fabric: input.fabric,
+    description: input.description,
+    rental_price: Math.round(input.rental_price),
+    original_rental_price: input.original_rental_price ?? null,
+    purchase_price: Math.round(input.purchase_price),
+    original_purchase_price: input.original_purchase_price ?? null,
+    security_deposit: Math.round(input.security_deposit),
+    is_rental_available: input.is_rental_available,
+    is_purchase_available: input.is_purchase_available,
+    badge_label: input.badge_label || '',
+    sizes_available: input.sizes_available,
+    images: input.images,
+    rating: input.rating,
+    reviews_count: input.reviews_count,
+    rented_count: input.rented_count,
+    is_live: input.is_live,
+    store_code: input.store_code,
+    pickup_sla: input.pickup_sla,
+    in_stock: input.in_stock,
+  }
+}
+
+function friendlyError(message: string): Error {
+  if (message.includes('duplicate key') && message.includes('slug')) {
+    return new Error('A gown with this name/slug already exists. Please use a different name.')
+  }
+  if (message.toLowerCase().includes('row-level security')) {
+    return new Error('Your account is not allowed to modify the catalog.')
+  }
+  return new Error(message)
 }
 
 export function useProducts() {
   return useQuery({
-    queryKey: ['bridal-products'],
+    queryKey: PRODUCTS_QUERY_KEY,
+    enabled: isSupabaseConfigured,
     queryFn: async (): Promise<BridalProduct[]> => {
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false })
+      const { data, error } = await requireSupabase()
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-          if (!error && data && data.length > 0) {
-            const normalized = data.map((row, idx) =>
-              normalizeProductRow(row as Partial<BridalProduct>, idx)
-            )
-            saveLocalProducts(normalized)
-            return normalized
-          }
-        } catch (err) {
-          console.warn('Supabase products fetch fallback to local catalog:', err)
-        }
-      }
-      return loadLocalProducts()
+      if (error) throw friendlyError(error.message)
+      return (data as ProductRow[]).map(toProduct)
     },
   })
 }
@@ -106,53 +112,16 @@ export function useAddProduct() {
 
   return useMutation({
     mutationFn: async (input: BridalProductInput): Promise<BridalProduct> => {
-      const newProduct: BridalProduct = {
-        ...input,
-        id: `eb-${Date.now().toString(36)}`,
-        created_at: new Date().toISOString(),
-      }
+      const { data, error } = await requireSupabase()
+        .from('products')
+        .insert(toRow(input))
+        .select()
+        .single()
 
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const dbPayload = {
-            title: newProduct.title,
-            slug: newProduct.slug,
-            product_type: newProduct.product_type,
-            silhouette: newProduct.silhouette,
-            occasion: newProduct.occasion,
-            fabric: newProduct.fabric,
-            description: newProduct.description,
-            rental_price: newProduct.rental_price,
-            original_rental_price: newProduct.original_rental_price,
-            purchase_price: newProduct.purchase_price,
-            security_deposit: newProduct.security_deposit,
-            badge_label: newProduct.badge_label || null,
-            sizes_available: newProduct.sizes_available,
-            images: newProduct.images,
-            is_active: newProduct.is_live,
-          }
-          const { data, error } = await supabase
-            .from('products')
-            .insert([dbPayload])
-            .select()
-            .single()
-
-          if (!error && data) {
-            newProduct.id = data.id
-          }
-        } catch (err) {
-          console.warn('Saved new gown locally (Supabase sync skipped):', err)
-        }
-      }
-
-      const current = loadLocalProducts()
-      const next = [newProduct, ...current]
-      saveLocalProducts(next)
-      return newProduct
+      if (error) throw friendlyError(error.message)
+      return toProduct(data as ProductRow)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bridal-products'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
   })
 }
 
@@ -161,39 +130,17 @@ export function useUpdateProduct() {
 
   return useMutation({
     mutationFn: async (updated: BridalProduct): Promise<BridalProduct> => {
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const dbPayload = {
-            title: updated.title,
-            slug: updated.slug,
-            product_type: updated.product_type,
-            silhouette: updated.silhouette,
-            occasion: updated.occasion,
-            fabric: updated.fabric,
-            description: updated.description,
-            rental_price: updated.rental_price,
-            original_rental_price: updated.original_rental_price,
-            purchase_price: updated.purchase_price,
-            security_deposit: updated.security_deposit,
-            badge_label: updated.badge_label || null,
-            sizes_available: updated.sizes_available,
-            images: updated.images,
-            is_active: updated.is_live,
-          }
-          await supabase.from('products').update(dbPayload).eq('id', updated.id)
-        } catch (err) {
-          console.warn('Updated gown locally (Supabase sync skipped):', err)
-        }
-      }
+      const { data, error } = await requireSupabase()
+        .from('products')
+        .update(toRow(updated))
+        .eq('id', updated.id)
+        .select()
+        .single()
 
-      const current = loadLocalProducts()
-      const next = current.map((p) => (p.id === updated.id ? updated : p))
-      saveLocalProducts(next)
-      return updated
+      if (error) throw friendlyError(error.message)
+      return toProduct(data as ProductRow)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bridal-products'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
   })
 }
 
@@ -202,31 +149,10 @@ export function useDeleteProduct() {
 
   return useMutation({
     mutationFn: async (id: string): Promise<string> => {
-      if (isSupabaseConfigured && supabase) {
-        try {
-          await supabase.from('products').delete().eq('id', id)
-        } catch (err) {
-          console.warn('Deleted gown locally (Supabase sync skipped):', err)
-        }
-      }
-
-      const current = loadLocalProducts()
-      const next = current.filter((p) => p.id !== id)
-      saveLocalProducts(next)
+      const { error } = await requireSupabase().from('products').delete().eq('id', id)
+      if (error) throw friendlyError(error.message)
       return id
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bridal-products'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
   })
 }
-
-export function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
