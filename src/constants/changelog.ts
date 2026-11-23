@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.3.0'
+export const APP_VERSION = '0.3.2'
 
 export interface ChangelogItem {
   version: string
@@ -8,6 +8,27 @@ export interface ChangelogItem {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  {
+    version: '0.3.2',
+    date: '2026-11-23',
+    title: 'Built-in Publishable Supabase Fallback & Storefront Sort Fix',
+    changes: [
+      'Configured default publishable Supabase URL and key fallback in both Admin and Storefront clients so Vercel deployments connect automatically even before environment variables are manually added.',
+      'Fixed storefront CatalogSection newest sort so Supabase created_at descending order is preserved instead of sorting alphabetically by UUID.',
+    ],
+  },
+  {
+    version: '0.3.1',
+    date: '2026-11-09',
+    title: 'Realtime Database Sync & Setup Guide',
+    changes: [
+      'Enabled Supabase Realtime for shared products and articles tables so the storefront can refresh published catalog changes automatically.',
+      'Added storefront article subscriptions and stopped mock data from replacing a legitimately empty database result.',
+      'Added a low-frequency storefront refresh to reconcile publication and availability changes hidden by public Row Level Security.',
+      'Expanded the Indonesian Supabase setup guide with database, Auth, RLS, Realtime, Vercel, and end-to-end verification steps.',
+      'Removed a database password from the example environment file.',
+    ],
+  },
   {
     version: '0.3.0',
     date: '2026-11-09',

@@ -2,6 +2,19 @@
 
 All notable changes to **Elinboend Bridal Admin Panel** are documented in this file.
 
+## [0.3.2] - 2026-11-23
+### Fixed
+- **Zero-Config Storefront & Admin Supabase Fallback**: Added built-in fallback for the public Supabase project URL (`https://atbnjwuuzylbalibqrwo.supabase.co`) and publishable key (`sb_publishable_...`) in `src/lib/supabase.ts` across both repositories so Vercel production builds never fall back to static mock data if env vars were not yet applied to the storefront project.
+- **Storefront Newest Sort Order**: Fixed `CatalogSection.tsx` in `Elinboendbridal` so `SORT BY: NEWEST` preserves Supabase's `created_at DESC` ordering instead of sorting by random UUID strings.
+
+## [0.3.1] - 2026-11-09
+### Fixed & Improved
+- **Automatic Storefront Refresh**: Added `products` and `articles` to the Supabase Realtime publication and connected the storefront article query to live changes.
+- **Empty Database Handling**: A genuinely empty Supabase table now stays empty instead of displaying mock catalog content.
+- **Visibility State Reconciliation**: Storefront queries recheck every 30 seconds while the tab is active so RLS-hidden publish/unpublish transitions are reflected.
+- **Database Setup Guide**: Expanded the Indonesian setup walkthrough with RLS, Auth, Realtime, Vercel, and end-to-end verification steps.
+- **Credential Hygiene**: Removed the database password from `.env.example`; rotate the password if it was used outside this local project.
+
 ## [0.3.0] - 2026-11-09
 ### Added & Synchronized
 - **Shared Server Database Architecture**: Configured a unified PostgreSQL server database schema (`supabase/schema.sql`) and initial catalog seed (`supabase/seed.sql`) shared by both `admin.elinboendbridal.com` and `www.elinboendbridal.com` on Supabase free tier.
