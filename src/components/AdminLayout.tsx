@@ -3,7 +3,6 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { useLanguageStore } from '../store/useLanguageStore'
 import {
-  ChartBar,
   Dress,
   Article,
   SignOut,
@@ -44,7 +43,6 @@ export default function AdminLayout() {
   }
 
   const mainNav = [
-    { key: 'nav.dashboard', defaultName: 'Dashboard', path: '/', icon: ChartBar },
     { key: 'nav.products', defaultName: 'Products', path: '/products', icon: Dress },
     { key: 'nav.articles', defaultName: 'Articles & Blog', path: '/articles', icon: Article },
   ]

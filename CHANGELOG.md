@@ -2,6 +2,10 @@
 
 All notable changes to **Elinboend Bridal Admin Panel** are documented in this file.
 
+## [0.3.3] - 2026-11-23
+### Simplified (5-Step Algorithm)
+- **Focused Navigation (`Products` & `Articles & Blog`)**: Removed the `Dashboard` tab from the sidebar and mobile navigation bar and set `/products` as the default landing screen after sign-in for streamlined client handover.
+
 ## [0.3.2] - 2026-11-23
 ### Fixed
 - **Zero-Config Storefront & Admin Supabase Fallback**: Added built-in fallback for the public Supabase project URL (`https://atbnjwuuzylbalibqrwo.supabase.co`) and publishable key (`sb_publishable_...`) in `src/lib/supabase.ts` across both repositories so Vercel production builds never fall back to static mock data if env vars were not yet applied to the storefront project.

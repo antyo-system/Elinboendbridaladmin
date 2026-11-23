@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.3.2'
+export const APP_VERSION = '0.3.3'
 
 export interface ChangelogItem {
   version: string
@@ -8,6 +8,14 @@ export interface ChangelogItem {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  {
+    version: '0.3.3',
+    date: '2026-11-23',
+    title: 'Streamlined Navigation: Products & Articles Focus',
+    changes: [
+      'Removed the Dashboard tab from navigation so the admin panel opens directly on Products (/products) alongside Articles & Blog (/articles) for immediate client handover.',
+    ],
+  },
   {
     version: '0.3.2',
     date: '2026-11-23',

@@ -25,7 +25,7 @@ export default function Login() {
   }, [initialized, initialize])
 
   if (session) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/products" replace />
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -59,7 +59,7 @@ export default function Login() {
 
     setFailedAttempts(0)
     setLockedUntil(null)
-    navigate('/', { replace: true })
+    navigate('/products', { replace: true })
   }
 
   return (
