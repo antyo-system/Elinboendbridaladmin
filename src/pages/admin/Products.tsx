@@ -1385,9 +1385,9 @@ export default function AdminProducts() {
             )}
           </div>
 
-          {/* 4-Column Product Grid View */}
+          {/* 2-Column Mobile / 4-Column Desktop Product Grid View (Kembang Seladang Mobile Style) */}
           {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
               <AnimatePresence mode="popLayout">
                 {filteredProducts.map((gown) => {
                   const coverImage = gown.images?.[0] || PLACEHOLDER_IMAGE
@@ -1405,16 +1405,10 @@ export default function AdminProducts() {
                       exit={{ opacity: 0, scale: 0.96 }}
                       transition={{ duration: 0.18 }}
                     >
-                      <Card className="group relative overflow-hidden flex h-full flex-col rounded-xl border border-cream-200 bg-white transition-all duration-300 hover:shadow-md hover:border-primary-300">
-                        {/* Top-Right Discount Badge (Exact Match with Elinboend Bridal Storefront) */}
-                        {discountPct > 0 && (
-                          <div className="absolute top-0 right-0 z-10 bg-primary-600 text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-1 rounded-bl-lg shadow-xs">
-                            -{discountPct}%
-                          </div>
-                        )}
-
+                      <Card className="group relative overflow-hidden flex h-full flex-col rounded-2xl border border-stone-200/90 bg-white shadow-2xs transition-all duration-300 hover:shadow-md hover:border-pink-300">
+                        {/* Thumbnail Image (Square on Mobile for Compact 2-Column Scroll, 4:5 on Desktop) */}
                         <div
-                          className="aspect-[4/5] bg-cream-50 relative overflow-hidden cursor-pointer border-b border-cream-100 flex items-center justify-center shrink-0"
+                          className="aspect-square sm:aspect-[4/5] bg-stone-100 relative overflow-hidden cursor-pointer border-b border-stone-100 flex items-center justify-center shrink-0"
                           onClick={() => setViewingProduct(gown)}
                         >
                           <img
@@ -1426,117 +1420,124 @@ export default function AdminProducts() {
                                 : 'object-scale-down p-6 opacity-65'
                             } transition-transform duration-500 ease-out`}
                           />
-                          {gown.badge_label && (
-                            <span className="absolute top-2.5 left-2.5 z-10 text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 bg-charcoal-900/90 text-white backdrop-blur-xs">
-                              {gown.badge_label}
-                            </span>
-                          )}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors hidden sm:flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 bg-white/95 backdrop-blur-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                              <Eye size={14} className="text-primary-600" weight="bold" />
-                              <span className="text-xs font-bold text-primary-700">
+                              <Eye size={14} className="text-pink-600" weight="bold" />
+                              <span className="text-xs font-bold text-pink-700">
                                 View Details
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="p-3.5 flex-1 flex flex-col justify-between">
-                          <div className="space-y-2">
-                            {/* Admin Meta Row: Code + Live Status + Category */}
-                            <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                              <div className="flex items-center gap-1 flex-wrap">
-                                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-cream-100 text-charcoal-600 border border-cream-300 rounded-sm font-mono">
-                                  {gown.code}
+                        {/* Card Body (Matches Kembang Seladang Mobile Layout) */}
+                        <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between gap-2">
+                          <div className="space-y-1.5 sm:space-y-2">
+                            {/* Row 1: SKU Code + Live Status + Optional Badge */}
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-stone-100 text-stone-700 rounded font-mono">
+                                {gown.code}
+                              </span>
+                              {gown.is_live === false ? (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-stone-100 text-stone-400 border border-stone-200 rounded">
+                                  Offline
                                 </span>
-                                {gown.is_live === false ? (
-                                  <span className="text-[8px] font-bold px-1.5 py-0.5 bg-cream-100 text-charcoal-400 border border-cream-200 rounded-sm">
-                                    Offline
+                              ) : (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
+                                  Live
+                                </span>
+                              )}
+                              {gown.badge_label && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200/80 rounded-full truncate max-w-full">
+                                  ★ {gown.badge_label}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Row 2: Discount Pill + Strikethrough + Main Rental Price */}
+                            <div className="pt-0.5">
+                              {discountPct > 0 && gown.original_rental_price && (
+                                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                  <span className="bg-[#ffd124] text-[#ee4d2d] text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 rounded">
+                                    -{discountPct}%
                                   </span>
-                                ) : (
-                                  <span className="text-[8px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm">
-                                    Live
+                                  <span className="text-[10px] sm:text-[11px] text-stone-400 line-through truncate">
+                                    {formatRp(gown.original_rental_price)}
                                   </span>
-                                )}
+                                </div>
+                              )}
+                              <div className="text-sm sm:text-base font-black text-pink-700 leading-tight truncate">
+                                {formatRp(gown.rental_price)}
                               </div>
+                            </div>
+
+                            {/* Row 3: Gown Title + Rented Counter */}
+                            <div className="flex items-baseline justify-between gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setViewingProduct(gown)}
+                                className="text-left font-sans text-xs sm:text-sm font-extrabold text-stone-900 leading-snug group-hover:text-pink-700 transition-colors line-clamp-2 cursor-pointer"
+                              >
+                                {gown.title}
+                              </button>
                               {gown.rented_count > 0 && (
-                                <span className="text-[9px] text-charcoal-400 font-medium">
+                                <span className="text-[9px] sm:text-[10px] text-stone-400 font-medium shrink-0">
                                   {gown.rented_count}x rented
                                 </span>
                               )}
                             </div>
 
-                            {/* Gown Title (Storefront Typography) */}
-                            <button
-                              type="button"
-                              onClick={() => setViewingProduct(gown)}
-                              className="text-left font-sans text-xs sm:text-sm font-bold text-charcoal-900 leading-snug group-hover:text-primary-700 transition-colors line-clamp-2 cursor-pointer"
-                            >
-                              {gown.title}
-                            </button>
-
-                            {/* Storefront Value Tags + Bridal Specs */}
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="inline-block bg-primary-50 text-primary-700 border border-primary-200/80 text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                                Free Fitting
-                              </span>
-                              <span className="inline-block bg-cream-100 text-charcoal-700 border border-cream-300 text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                                3-Day Rent
-                              </span>
-                              <span className="inline-flex items-center gap-1 bg-cream-50 text-charcoal-600 border border-cream-200 text-[10px] font-medium px-1.5 py-0.5 rounded">
-                                <span
-                                  className="w-2 h-2 rounded-full border border-cream-400"
-                                  style={{ backgroundColor: gown.color_hex }}
-                                />
+                            {/* Row 4: Bridal Spec Pills (Silhouette, Color Swatch, Occasion) */}
+                            <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                              <span className="inline-block bg-stone-100 text-stone-700 text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded">
                                 {gown.silhouette}
                               </span>
+                              <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-700 text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded max-w-full truncate">
+                                <span
+                                  className="w-2 h-2 rounded-full border border-stone-300 shrink-0"
+                                  style={{ backgroundColor: gown.color_hex }}
+                                />
+                                <span className="truncate">{gown.color_name.split('&')[0].trim()}</span>
+                              </span>
+                              <span className="inline-block bg-pink-50 text-pink-700 border border-pink-100 text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded truncate max-w-full">
+                                ✨ {gown.occasion}
+                              </span>
                             </div>
+
+                            {/* Row 5: Short 1-Line Description / Fabric */}
+                            {(gown.description || gown.fabric) && (
+                              <p className="text-[10px] sm:text-[11px] text-stone-500 line-clamp-1">
+                                {gown.description || gown.fabric}
+                              </p>
+                            )}
                           </div>
 
-                          {/* Dashed Divider + Stacked Price & Admin Actions (Matches Storefront Card Footer) */}
-                          <div className="mt-3 pt-2.5 border-t border-dashed border-cream-200 flex items-end justify-between gap-2">
-                            <div className="min-w-0">
-                              {discountPct > 0 && (
-                                <span className="inline-block bg-primary-50 text-primary-700 text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded mb-1">
-                                  SAVE {discountPct}%
-                                </span>
-                              )}
-                              <div className="text-sm sm:text-base font-extrabold text-primary-700 leading-tight truncate">
-                                {formatRp(gown.rental_price)}
-                              </div>
-                              {gown.original_rental_price && (
-                                <div className="text-[11px] text-charcoal-400 line-through leading-tight mt-0.5 truncate">
-                                  {formatRp(gown.original_rental_price)}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                title="View Details"
-                                className="w-7 h-7 flex items-center justify-center text-charcoal-500 hover:text-primary-700 hover:bg-primary-50 rounded-full transition-colors border border-cream-300 cursor-pointer"
-                                onClick={() => setViewingProduct(gown)}
-                              >
-                                <Eye size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                title="Edit Gown"
-                                className="w-7 h-7 flex items-center justify-center text-charcoal-500 hover:text-primary-700 hover:bg-primary-50 rounded-full transition-colors border border-cream-300 cursor-pointer"
-                                onClick={() => openEditForm(gown)}
-                              >
-                                <Pencil size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                title="Delete Gown"
-                                className="w-7 h-7 flex items-center justify-center text-charcoal-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors border border-cream-300 cursor-pointer"
-                                onClick={() => handleDeleteProduct(gown)}
-                              >
-                                <Trash size={13} />
-                              </button>
-                            </div>
+                          {/* Row 6: Thumb-Friendly Bottom Action Bar (Eye, Edit, Delete) */}
+                          <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-stone-100">
+                            <button
+                              type="button"
+                              title="View Details"
+                              className="h-8 flex items-center justify-center text-stone-600 hover:text-pink-700 hover:bg-pink-50 hover:border-pink-200 rounded-lg transition-colors border border-stone-200 cursor-pointer"
+                              onClick={() => setViewingProduct(gown)}
+                            >
+                              <Eye size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Edit Gown"
+                              className="h-8 flex items-center justify-center text-stone-600 hover:text-pink-700 hover:bg-pink-50 hover:border-pink-200 rounded-lg transition-colors border border-stone-200 cursor-pointer"
+                              onClick={() => openEditForm(gown)}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete Gown"
+                              className="h-8 flex items-center justify-center text-stone-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 rounded-lg transition-colors border border-stone-200 cursor-pointer"
+                              onClick={() => handleDeleteProduct(gown)}
+                            >
+                              <Trash size={15} />
+                            </button>
                           </div>
                         </div>
                       </Card>
@@ -1546,6 +1547,16 @@ export default function AdminProducts() {
               </AnimatePresence>
             </div>
           )}
+
+          {/* Floating Quick-Add Button (+) on Mobile (Matches Kembang Seladang) */}
+          <button
+            type="button"
+            onClick={openCreateForm}
+            aria-label="Add New Gown or Dress"
+            className="md:hidden fixed bottom-20 right-4 z-30 w-13 h-13 rounded-full bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-600/30 flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+          >
+            <Plus size={24} weight="bold" />
+          </button>
 
           {/* Table View */}
           {viewMode === 'list' && filteredProducts.length > 0 && (

@@ -2,6 +2,11 @@
 
 All notable changes to **Elinboend Bridal Admin Panel** are documented in this file.
 
+## [0.3.4] - 2026-11-23
+### Mobile UI/UX Improvement
+- **2-Column Mobile Grid (`Products` & `Articles`)**: Switched the mobile catalog and journal cards from 1-column to a clean 2-column grid layout following the Kembang Seladang mobile design, drastically reducing scroll length.
+- **Thumb-Friendly Card Footer & Floating Quick-Add (`+`)**: Added full-width bordered bottom action bars (`View`, `Edit`, `Delete`) on each card and a floating mobile `+` button for instant gown or article creation from any scroll position.
+
 ## [0.3.3] - 2026-11-23
 ### Simplified (5-Step Algorithm)
 - **Focused Navigation (`Products` & `Articles & Blog`)**: Removed the `Dashboard` tab from the sidebar and mobile navigation bar and set `/products` as the default landing screen after sign-in for streamlined client handover.

@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.3.3'
+export const APP_VERSION = '0.3.4'
 
 export interface ChangelogItem {
   version: string
@@ -8,6 +8,15 @@ export interface ChangelogItem {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  {
+    version: '0.3.4',
+    date: '2026-11-23',
+    title: '2-Column Mobile Card Grid & Thumb-Friendly Actions',
+    changes: [
+      'Redesigned Products and Articles mobile grid to a compact 2-column layout (matching Kembang Seladang mobile UX) to minimize vertical scrolling.',
+      'Added full-width thumb-friendly bottom action button bars and a floating quick-add (+) button on mobile screens.',
+    ],
+  },
   {
     version: '0.3.3',
     date: '2026-11-23',

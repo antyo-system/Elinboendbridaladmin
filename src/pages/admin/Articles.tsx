@@ -25,7 +25,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import {
   Dialog,
@@ -951,7 +950,7 @@ export default function AdminArticles() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
                   {products.map((prod) => {
                     const selected = formData.related_product_ids.includes(prod.id)
                     return (
@@ -1100,7 +1099,7 @@ export default function AdminArticles() {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
           {filteredArticles.map((article) => {
             const liveSeo = calculateSEOScore({
               title: article.title,
@@ -1124,19 +1123,19 @@ export default function AdminArticles() {
             return (
               <Card
                 key={article.id}
-                className="p-4 sm:p-5 bg-white border border-stone-200 hover:border-pink-200 transition-all shadow-2xs"
+                className="overflow-hidden flex flex-col justify-between rounded-2xl bg-white border border-stone-200/90 hover:border-pink-300 hover:shadow-md transition-all shadow-2xs"
               >
-                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <div>
                   {/* Cover Thumbnail */}
                   <div
                     onClick={() => handleOpenPreview(article)}
-                    className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 cursor-pointer group"
+                    className="aspect-[16/10] w-full overflow-hidden bg-stone-100 border-b border-stone-100 cursor-pointer group relative"
                   >
                     {article.cover_image ? (
                       <img
                         src={article.cover_image}
                         alt={article.cover_image_alt || article.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-300">
@@ -1146,112 +1145,117 @@ export default function AdminArticles() {
                   </div>
 
                   {/* Content Details */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-pink-50 text-pink-700 border border-pink-200"
-                      >
-                        {article.category}
-                      </Badge>
-
+                  <div className="p-2.5 sm:p-4 space-y-1.5 sm:space-y-2">
+                    <div className="flex flex-wrap items-center gap-1">
                       <span
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                        className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                           article.status === 'published'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-amber-50 text-amber-700 border-amber-200'
                         }`}
                       >
-                        {article.status === 'published' ? '● Published' : '○ Draft'}
+                        {article.status === 'published' ? 'Live' : 'Draft'}
                       </span>
 
                       <span
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${getSEOScoreBadgeClass(
+                        className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border ${getSEOScoreBadgeClass(
                           liveSeo.score
                         )}`}
                       >
-                        SEO: {liveSeo.score}/100
+                        SEO {liveSeo.score}
                       </span>
 
-                      <span className="text-xs text-stone-400 flex items-center gap-1">
-                        <Clock size={13} /> {article.reading_time_minutes} min read
-                      </span>
-
-                      <span className="text-xs text-stone-400 flex items-center gap-1">
-                        <Eye size={13} /> {(article.views_count || 0).toLocaleString()} views
+                      <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded bg-pink-50 text-pink-700 border border-pink-100 truncate max-w-full">
+                        {article.category}
                       </span>
                     </div>
 
                     <h3
                       onClick={() => handleOpenEditInline(article)}
-                      className="text-base font-bold text-stone-900 hover:text-pink-600 cursor-pointer leading-snug"
+                      className="text-xs sm:text-sm font-extrabold text-stone-900 hover:text-pink-600 cursor-pointer leading-snug line-clamp-2"
                     >
                       {article.title}
                     </h3>
 
-                    <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">
+                    <p className="text-[10px] sm:text-xs text-stone-500 line-clamp-2 leading-relaxed">
                       {article.excerpt}
                     </p>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                      <div className="flex items-center gap-2 text-[11px] text-stone-400">
-                        <span>By {article.author_name}</span>
-                        {article.focus_keyword && (
-                          <span className="px-2 py-0.5 rounded bg-stone-100 text-stone-600 font-mono">
-                            🎯 {article.focus_keyword}
-                          </span>
-                        )}
-                        {article.related_product_ids?.length > 0 && (
-                          <span className="px-2 py-0.5 rounded bg-pink-50 text-pink-700 font-semibold">
-                            👗 {article.related_product_ids.length} Linked Gowns
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenPreview(article)}
-                          className="h-8 text-xs"
-                        >
-                          <Eye size={14} className="mr-1" /> Preview
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleToggleStatus(article)}
-                          className="h-8 text-xs"
-                        >
-                          {article.status === 'published' ? 'Unpublish' : 'Publish'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenEditInline(article)}
-                          className="h-8 text-xs text-blue-600 hover:text-blue-700"
-                        >
-                          <Pencil size={14} className="mr-1" /> Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedArticleForDelete(article)
-                            setIsDeleteConfirmOpen(true)
-                          }}
-                          className="h-8 text-xs text-red-600 hover:text-red-700"
-                        >
-                          <Trash size={14} />
-                        </Button>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[9px] sm:text-[11px] text-stone-400 pt-0.5">
+                      <span className="inline-flex items-center gap-0.5">
+                        <Clock size={11} /> {article.reading_time_minutes}m
+                      </span>
+                      <span>•</span>
+                      <span className="inline-flex items-center gap-0.5">
+                        <Eye size={11} /> {(article.views_count || 0).toLocaleString()}
+                      </span>
+                      {article.related_product_ids?.length > 0 && (
+                        <span className="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 font-semibold">
+                          👗 {article.related_product_ids.length}
+                        </span>
+                      )}
                     </div>
                   </div>
+                </div>
+
+                {/* Thumb-Friendly Bottom Action Bar */}
+                <div className="p-2.5 sm:px-4 sm:pb-3.5 pt-2 border-t border-stone-100 grid grid-cols-4 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleStatus(article)}
+                    title={article.status === 'published' ? 'Unpublish' : 'Publish'}
+                    className={`h-8 px-1.5 rounded-lg border text-[10px] font-bold truncate transition-colors cursor-pointer ${
+                      article.status === 'published'
+                        ? 'border-stone-200 text-stone-600 hover:bg-stone-50'
+                        : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                    }`}
+                  >
+                    {article.status === 'published' ? 'Draft' : 'Publish'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPreview(article)}
+                    title="Preview Article"
+                    className="h-8 flex items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:text-pink-700 hover:bg-pink-50 hover:border-pink-200 transition-colors cursor-pointer"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditInline(article)}
+                    title="Edit Article"
+                    className="h-8 flex items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:text-pink-700 hover:bg-pink-50 hover:border-pink-200 transition-colors cursor-pointer"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedArticleForDelete(article)
+                      setIsDeleteConfirmOpen(true)
+                    }}
+                    title="Delete Article"
+                    className="h-8 flex items-center justify-center rounded-lg border border-stone-200 text-stone-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer"
+                  >
+                    <Trash size={14} />
+                  </button>
                 </div>
               </Card>
             )
           })}
         </div>
+      )}
+
+      {/* Floating Quick-Add Button (+) on Mobile */}
+      {!isEditorOpen && (
+        <button
+          type="button"
+          onClick={handleToggleForm}
+          aria-label="Create New Article"
+          className="md:hidden fixed bottom-20 right-4 z-30 w-13 h-13 rounded-full bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-600/30 flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+        >
+          <Plus size={24} weight="bold" />
+        </button>
       )}
 
       {/* Article Preview Modal */}
